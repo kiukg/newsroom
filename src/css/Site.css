@@ -34,3 +34,27 @@
 a{
     text-decoration:none ;
 }
+
+.errorLabel{
+    display: grid;
+    height: 50vh;
+    grid-column: 1/-1;
+    text-align: center;
+    color: #490606;
+    font-size: 2em;
+    align-items: center;
+
+}
+
+.paginationC{
+    grid-column: 1/-1;
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    background-color: white;
+    z-index: 500;
+    padding: 5px;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+}

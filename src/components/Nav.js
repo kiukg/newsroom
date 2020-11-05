@@ -1,4 +1,6 @@
 import React from "react";
+import { connect } from "react-redux";
+import { searchNews } from "../redux/actions/newsAction";
 import PropTypes from "prop-types";
 import AppBar from "@material-ui/core/AppBar";
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -10,20 +12,25 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import MenuIcon from "@material-ui/icons/Menu";
+import SearchIcon from "@material-ui/icons/Search";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
-import { makeStyles, useTheme } from "@material-ui/core/styles";
+import InputBase from "@material-ui/core/InputBase";
+import { makeStyles, useTheme, fade } from "@material-ui/core/styles";
 import {
   Announcement,
   Brush,
   Camera,
   Computer,
   Gavel,
+  Search,
   Sports,
 } from "@material-ui/icons";
 
-import { Route, Link, Switch, BrowserRouter } from "react-router-dom";
+import { Route, Link, Switch, BrowserRouter, NavLink } from "react-router-dom";
+import { navigate } from "@reach/router";
 import NewsList from "./NewsList";
+import { Button } from "@material-ui/core";
 
 const drawerWidth = 240;
 
@@ -58,6 +65,52 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     padding: theme.spacing(3),
   },
+  title: {
+    flexGrow: 1,
+    display: "none",
+    [theme.breakpoints.up("sm")]: {
+      display: "block",
+    },
+  },
+  search: {
+    position: "relative",
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: fade(theme.palette.common.white, 0.15),
+    "&:hover": {
+      backgroundColor: fade(theme.palette.common.white, 0.25),
+    },
+    marginLeft: 0,
+    width: "100%",
+    [theme.breakpoints.up("sm")]: {
+      marginLeft: theme.spacing(0),
+      width: "auto",
+    },
+  },
+  searchIcon: {
+    padding: theme.spacing(0, 2),
+    height: "100%",
+    position: "absolute",
+    pointerEvents: "none",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  inputRoot: {
+    color: "inherit",
+  },
+  inputInput: {
+    padding: theme.spacing(1, 1, 1, 0),
+    // vertical padding + font size from searchIcon
+    paddingLeft: `calc(1em + ${theme.spacing(4)}px)`,
+    transition: theme.transitions.create("width"),
+    width: "100%",
+    [theme.breakpoints.up("sm")]: {
+      width: "12ch",
+      "&:focus": {
+        width: "20ch",
+      },
+    },
+  },
 }));
 
 function ResponsiveDrawer(props) {
@@ -70,6 +123,18 @@ function ResponsiveDrawer(props) {
     setMobileOpen(!mobileOpen);
   };
 
+  const handleSearch = (event, searchWord) => {
+    props.searchNews(`${event.target.value}`);
+    // props.history.push('/search');
+  };
+
+  const submitSearch = (event) => {
+    if (event.keyCode == 13) {
+      console.log(props);
+      navigate(`/search/${props.state.news.search}`);
+    }
+  };
+
   const categoryList = [
     { id: 1, name: "News", icon: <Announcement />, path: "/" },
     { id: 2, name: "Politica", icon: <Gavel />, path: "/Politica" },
@@ -77,6 +142,7 @@ function ResponsiveDrawer(props) {
     { id: 4, name: "Espectaculo", icon: <Camera />, path: "/Espectaculo" },
     { id: 5, name: "Deportes", icon: <Sports />, path: "/Deportes" },
     { id: 6, name: "Diseño", icon: <Brush />, path: "/Diseño" },
+    // { id: "Search", name: "Busqueda", icon: <Search />, path: "/search" },
   ];
 
   const drawer = (
@@ -100,7 +166,6 @@ function ResponsiveDrawer(props) {
 
   const container =
     window !== undefined ? () => window().document.body : undefined;
-
   return (
     <BrowserRouter>
       <div className={classes.root}>
@@ -116,9 +181,34 @@ function ResponsiveDrawer(props) {
             >
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6" noWrap>
+            <Typography className={classes.title} variant="h6" noWrap>
               News Room
             </Typography>
+
+            <div className={classes.search}>
+              {/* <div className={classes.searchIcon}>
+                <SearchIcon />
+              </div> */}
+              <InputBase
+                placeholder="Buscar…"
+                classes={{
+                  root: classes.inputRoot,
+                  input: classes.inputInput,
+                }}
+                inputProps={{ "aria-label": "search" }}
+                onChange={handleSearch}
+                // onKeyDown={submitSearch}
+              />
+            </div>
+            <Link to={"/search/" + props.state.news.search}>
+              <IconButton
+                color="default"
+                aria-label="search"
+                component="span"
+              >
+                <SearchIcon />
+              </IconButton>
+            </Link>
           </Toolbar>
         </AppBar>
         <nav className={classes.drawer} aria-label="mailbox folders">
@@ -159,6 +249,7 @@ function ResponsiveDrawer(props) {
               if (categoryItem.name === "News") {
                 return (
                   <Route
+                    key={categoryItem.id + categoryItem.name}
                     exact
                     path={categoryItem.path}
                     render={(props) => (
@@ -172,6 +263,7 @@ function ResponsiveDrawer(props) {
               } else {
                 return (
                   <Route
+                    key={categoryItem.id + categoryItem.name}
                     path={`${categoryItem.path}`}
                     render={(props) => (
                       <NewsList
@@ -183,6 +275,22 @@ function ResponsiveDrawer(props) {
                 );
               }
             })}
+
+            <Route
+              path="/search"
+              render={(props) => (
+                // console.log(props)
+                <NewsList
+                  categoryObj={{
+                    id: "search",
+                    name: "Busqueda",
+                    icon: <Search />,
+                    path: "/search",
+                  }}
+                  props={props}
+                ></NewsList>
+              )}
+            ></Route>
           </Switch>
         </main>
       </div>
@@ -194,4 +302,14 @@ ResponsiveDrawer.propTypes = {
   window: PropTypes.func,
 };
 
-export default ResponsiveDrawer;
+const mapStateToProps = (state) => {
+  return {
+    state,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => ({
+  searchNews: (path) => dispatch(searchNews(path)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(ResponsiveDrawer);
